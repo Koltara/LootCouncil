@@ -1,0 +1,10 @@
+## Interface: 40000
+## Title: Loot Council
+## Notes: An intuitive way to distribute gear drops fairly.
+## Author: Koltaras
+## Version: 0.1
+## SavedVariables: LootCouncilDB, valueTable
+
+LootCouncilEmbeds.xml
+
+LootCouncilCore.lua
