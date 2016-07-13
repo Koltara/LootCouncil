@@ -4,131 +4,22 @@ local AceTimer = LibStub("AceTimer-3.0")
 
 local valueTable = {}
 
-local ScrollingTable = LibStub("ScrollingTable");
 
-local cols =
+local options = 
 {
-	["Headers"] = {	-- Column 1 (Raid Participant)
-		["name"] = "Raid Participant",
-		["width"] = 50,
-		["align"] = "RLEFT",
-		["color"] = {
-			["r"] = 0.5,
-			["g"] = 0.5,
-			["b"] = 1.0,
-			["a"] = 1.0
-		},
-		["colorargs"] = nil,
-		["bgcolor"] = {
-			["r"] = 1.0,
-			["g"] = 0.0,
-			["b"] = 0.0,
-			["a"] = 1.0
-		}, -- red backgrounds, eww!
-		["defaultsort"] = "dsc",
-		["sortnext"]= 4,
-		["comparesort"] = function (cella, cellb, column)
-			return cella.value < cellb.value;
-		end,
-		["DoCellUpdate"] = nil,
+	name = "LootCouncil",
+	handler = LootCouncil,
+	type = 'group',
+	args = {
 	},
-	{	-- Column 2 (Class)
-		["name"] = "Class",
-		["width"] = 50,
-		["align"] = "LEFT",
-		["color"] = {
-			["r"] = 0.5,
-			["g"] = 0.5,
-			["b"] = 1.0,
-			["a"] = 1.0
-		},
-		["colorargs"] = nil,
-		["bgcolor"] = {
-			["r"] = 1.0,
-			["g"] = 0.0,
-			["b"] = 0.0,
-			["a"] = 1.0
-		}, -- red backgrounds, eww!
-		["defaultsort"] = "dsc",
-		["sortnext"]= 4,
-		["comparesort"] = function (cella, cellb, column)
-			return cella.value < cellb.value;
-		end,
-		["DoCellUpdate"] = nil,
-	},
-	{	-- Column 3 (Presence)
-		["name"] = "Presence",
-		["width"] = 50,
-		["align"] = "LEFT",
-		["color"] = {
-			["r"] = 0.5,
-			["g"] = 0.5,
-			["b"] = 1.0,
-			["a"] = 1.0
-		},
-		["colorargs"] = nil,
-		["bgcolor"] = {
-			["r"] = 1.0,
-			["g"] = 0.0,
-			["b"] = 0.0,
-			["a"] = 1.0
-		}, -- red backgrounds, eww!
-		["defaultsort"] = "dsc",
-		["sortnext"]= 4,
-		["comparesort"] = function (cella, cellb, column)
-			return cella.value < cellb.value;
-		end,
-		["DoCellUpdate"] = nil,
-	},
-	{	-- Column 4 (Overall Presence)
-		["name"] = "Class",
-		["width"] = 50,
-		["align"] = "LEFT",
-		["color"] = {
-			["r"] = 0.5,
-			["g"] = 0.5,
-			["b"] = 1.0,
-			["a"] = 1.0
-		},
-		["colorargs"] = nil,
-		["bgcolor"] = {
-			["r"] = 1.0,
-			["g"] = 0.0,
-			["b"] = 0.0,
-			["a"] = 1.0
-		}, -- red backgrounds, eww!
-		["defaultsort"] = "dsc",
-		["sortnext"]= 4,
-		["comparesort"] = function (cella, cellb, column)
-			return cella.value < cellb.value;
-		end,
-		["DoCellUpdate"] = nil,
-	},
-
 }
 
-
-
-local displayTable = ScrollingTable:CreateST(cols, nil, 50, nil, nil);
-
-
-
-
-
-local function LootCouncil:DrawControlTab(container)
-	--[[
-
-	First Tab
-	]]--
-
-end
-
-local function LootCouncil:DrawDisplayTab(container)
-	--[[
-
-	Second Tab
-	]]--
-end
+local defaults = 
+{
+	profile = {
+  	message = "LootCouncil Defaults",
+ 	},
+}
 
 function LootCouncil:OnInitialize()
 
@@ -141,72 +32,52 @@ function LootCouncil:OnInitialize()
 	raidStartButton = AceGUI:Create("Button")
 	raidStartButton:SetWidth(200)
 	raidStartButton:SetText("Start Raid")
-	raidStartButton:SetCallback("OnClick", StartRaid())
+	raidStartButton:SetCallback("OnClick", "StartRaid")
 
 	raidEndButton = AceGUI:Create("Button")
 	raidEndButton:SetWidth(200)
 	raidEndButton:SetText("End Raid")
-	raidEndButton:SetCallback("OnClick", EndRaid())
+	raidEndButton:SetCallback("OnClick", "EndRaid")
 
 	mainWindow:AddChild(raidEndButton)
 	mainWindow:AddChild(raidStartButton)
 
+	self.db = LibStub("AceDB-3.0"):New("LootCouncilDB", defaults, true)
 
-
-	local options =
-	{
-		name = "LootCouncil",
-		handler = LootCouncil,
-		type = 'group',
-		args =
-		{
-			msg =
-			{
-				type = 'input',
-				name = 'My Message',
-				desc = 'The message for my addon',
-				set = 'SetMyMessage',
-				get = 'GetMyMessage',
-			},
-		}	,
-	}
-
-
-
-	self.db = LibStub("AceDB-3.0"):New("LootCouncilDB")
-
-	options.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(db)
+	options.args.profile = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("LootCouncil", "LootCouncil")
 
 	LootCouncil:RegisterChatCommand("lcout", "ValueOutput")
-
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("LootCouncil", options, {"myslash"})
+	
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("LootCouncil", options, nil)
 
 end
 
-function LootCouncil:ValueOutput(input)
-{
-	raidMembers = GetHomePartyInfo()
+function LootCouncil:ValueOutput()
 
-	for i=0, raidMembers.getn()
-	do
-		LootCouncil:Print(valueTable.raidMembers[i].name .. ", " .. valueTable.raidMembers[i].value)
-	end
-}
+	local raidMembers = GetHomePartyInfo()
+
+	--for i=0, 1
+	--do
+	local memberName = tostring(raidMembers[1])
+		LootCouncil:Print(valueTable.memberName.name .. ", " .. valueTable.memberName.value)
+	--end
+
 end
 
 function LootCouncil:StartRaid()
 	-- Set Initial Raid Members
 
-	SetLootMethod(["master", "player"])
+	SetLootMethod("master", "player")
 	SetLootThreshold(4)
+	
+	local raidMembers = GetHomePartyInfo()
 
-	raidMembers = GetHomePartyInfo()
-
-	for i=0, raidMembers.getn()
+	for i=1, raidMembers.getn()
 	do
-		valueTable.raidMembers[i] =
+		valueTable[tostring(raidMembers[i])] =
 		{
-			name = raidMembers[i],
+			name = "raidMembers[i]",
 			value = value + 50;
 		}
 	end
@@ -218,7 +89,7 @@ end
 function LootCouncil:EndRaid()
 
 	-- Store participation time and total time.
-	raidMembers = GetHomePartyInfo()
+	local raidMembers = GetHomePartyInfo()
 
 	for i=0, raidMembers.getn()
 	do
@@ -234,12 +105,12 @@ function LootCouncil:EndRaid()
 end
 
 function LootCouncil:OnEnable()
-	 mainWindow:SetDisabled(false)
+	 --mainWindow:SetDisabled(false)
 end
 
 function LootCouncil:OnDisable()
 	-- Lots of Kappa
 	-- Never Disable
-	mainWindow:SetDisabled(true)
+	--mainWindow:SetDisabled(true)
 end
 
