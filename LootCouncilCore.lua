@@ -5,7 +5,7 @@ local AceTimer = LibStub("AceTimer-3.0")
 local valueTable = {}
 
 
-local options = 
+local options =
 {
 	name = "LootCouncil",
 	handler = LootCouncil,
@@ -14,7 +14,7 @@ local options =
 	},
 }
 
-local defaults = 
+local defaults =
 {
 	profile = {
   	message = "LootCouncil Defaults",
@@ -48,7 +48,7 @@ function LootCouncil:OnInitialize()
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("LootCouncil", "LootCouncil")
 
 	LootCouncil:RegisterChatCommand("lcout", "ValueOutput")
-	
+
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("LootCouncil", options, nil)
 
 end
@@ -70,8 +70,10 @@ function LootCouncil:StartRaid()
 
 	SetLootMethod("master", "player")
 	SetLootThreshold(4)
-	
+
 	local raidMembers = GetHomePartyInfo()
+
+	LootCouncil:Print(raidMembers)
 
 	for i=1, raidMembers.getn()
 	do
@@ -80,6 +82,7 @@ function LootCouncil:StartRaid()
 			name = "raidMembers[i]",
 			value = value + 50;
 		}
+		LootCouncil:Print(raidMembers[i])
 	end
 
 	valueTable.overallPresence = valueTable.overallPresence + 50
@@ -90,13 +93,15 @@ function LootCouncil:EndRaid()
 
 	-- Store participation time and total time.
 	local raidMembers = GetHomePartyInfo()
+	LootCouncil:Print(raidMembers)
 
-	for i=0, raidMembers.getn()
+	for i=1, raidMembers.getn()
 	do
 		valueTable.raidMembers[i] =
 		{
 			name = raidMembers[i],
 			value = value + 50;
+			LootCouncil:Print(raidMembers[i])
 		}
 	end
 
