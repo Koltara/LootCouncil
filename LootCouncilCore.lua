@@ -25,7 +25,6 @@ local function DrawViewGroup(container)
 
 	desc:SetText("View")
 	desc:SetFullWidth(true)
-
 	container:AddChild(desc)
 
 
@@ -54,7 +53,7 @@ local function DrawUpdateGroup(container)
 	amountBox:SetWidth(200)
 	amountBox:SetNumeric(true)
 	amountBox:SetNumber(0)
-	amountBox:SetCallback("OnEnterPressed", function(widget, event, text) amount = text end)
+	amountBox:SetCallback("OnEnterPressed", function(widget, event, number) amount = number end)
 	container:AddChild(amountBox)
 
 	local addButton = AceGUI:Create("Button")
@@ -75,6 +74,7 @@ end
 local function AddPointsToMember(member, amount)
 	-- Add points to the raid member's total
 end
+
 local function SubPointsFromMember(member, amount)
 	-- Subtract points from the raid member's total
 end
@@ -82,26 +82,75 @@ end
 local function DrawRaidGroup(container)
 	local desc = AceGUI:Create("Label")
 
+	local awardName
+	local awardAmount
+
+
 	desc:SetText("Raid")
 	desc:SetFullWidth(true)
 	container:AddChild(desc)
 
-	local raidEndButton = AceGUI:Create("Button")
-	raidEndButton:SetWidth(200)
-	raidEndButton:SetText("End Raid")
-	raidEndButton:SetCallback("OnClick", "EndRaid")
-
 	local raidStartButton = AceGUI:Create("Button")
 	raidStartButton:SetWidth(200)
 	raidStartButton:SetText("Start Raid")
-	raidStartButton:SetCallback("OnClick", "StartRaid")
+	raidStartButton:SetCallback("OnClick", StartRaid(raidStartButton))
+
+	local raidEndButton = AceGUI:Create("Button")
+	raidEndButton:SetWidth(200)
+	raidEndButton:SetText("End Raid")
+	raidEndButton:SetCallback("OnClick", EndRaid(raidStartButton))
+
+	local mvpName = AceGUI:Create("Dropdown")
+	mvpName:SetWidth(200)
+	mvpName:SetLabel("MVP Name:")
+	mvpName:SetList(GetHomePartyInfo())
+	mvpName:SetCallback("OnValueChanged", NameEnter(widget, event, key, awardAmount))
+	container:AddChild(mvpName)
+
+	local mvpAmount = AceGUI:Create("EditBox")
+	mvpAmount:SetWidth(200)
+	mvpAmount:SetLabel("MVP Amount: ")
+	mvpAmount:SetNumeric(true)
+	mvpAmount:SetNumber(0))
+	mvpAmount:SetCallback("OnEnterPressed", AmountEnter(mvpAmount, event, number, awardName))
+	container:AddChild(mvpAmount)
+
+	local mvpButton = AceGUI:Create("Button")
+	mvpButton:SetWidth(200)
+	mvpButton:SetText("Award MVP")
+	mvpButton:SetDisabled(true)
+	mvpButton:SetCallback("OnClick", AwardPoints(awardName, awardAmount))
+	container:AddChild(mvpButton)
+
+	local function AmountEnter(widget, event, number, name)
+		awardAmount = number
+		if name ~= nil then
+			mvpButton:SetDisabled(false)
+	end
+
+	local function NameEnter(widget, event, key, awardAmount)
+		awardName = key
+		if awardAmount ~= nil then
+			mvpButton:SetDisabled(false)
+	end
+
+	local function AwardPoints(name, points)
+		--Award the MVP "points" to "name"
+
+		--Disable the Button until a fresh entry has been made
+		mvpButton:SetDisabled(true)
+	end
+
 
 	container:AddChild(raidStartButton)
 	container:AddChild(raidEndButton)
 end
 
 
+
+
 local function SelectTab(container, event, group)
+
 	container:ReleaseChildren()
 	if group == "viewTab" then
 		DrawViewGroup(container)
@@ -152,47 +201,23 @@ function LootCouncil:ValueOutput()
 
 end
 
-function LootCouncil:StartRaid()
+function LootCouncil:StartRaid(widget)
 	-- Set Initial Raid Members
 
-	SetLootMethod("master", "player")
-	SetLootThreshold(4)
 
-	local raidMembers = GetHomePartyInfo()
+	widget:SetDisabled(true)
 
-	LootCouncil:Print(raidMembers)
 
-	for i=1, raidMembers.getn()
-	do
-		valueTable[tostring(raidMembers[i])] =
-		{
-			name = "raidMembers[i]",
-			value = value + 50;
-		}
-		LootCouncil:Print(raidMembers[i])
-	end
-
-	valueTable.overallPresence = valueTable.overallPresence + 50
 
 end
 
-function LootCouncil:EndRaid()
+function LootCouncil:EndRaid(widget)
 
 	-- Store participation time and total time.
-	local raidMembers = GetHomePartyInfo()
-	LootCouncil:Print(raidMembers)
-
-	for i=1, raidMembers.getn()
-	do
-		valueTable.raidMembers[i] =
-		{
-			name = raidMembers[i],
-			value = value + 50;
-			LootCouncil:Print(raidMembers[i])
-		}
-	end
 
 	valueTable.overallPresence = valueTable.overallPresence + 50
+
+	widget:SetDisabled(true)
 
 end
 
